@@ -1,8 +1,6 @@
 
 # Purpose
-- Create a game with depth and 2D graphics where a skier goes down a slope, jumping over and dodging obstacles. This is meant to be a soothing yet exciting experience. The objective is to reach the highest score possible, attained by completing tricks and staying alive for longer.
-
-**COMMENT**: Is there an overall goal of the game? For example, are you trying to achieve a certain score?
+- Create a game with depth and 2D graphics where a skier goes down a slope, jumping over and dodging obstacles. This is meant to be a soothing yet exciting experience. The objective is to reach the highest score possible, attained by completing tricks and staying alive for longer. The high score is displayed on the home screen, giving an incentive to succeed. Playing the game earns in-game currency for the player that can be used to purchase cosmetics.  
 
 # Functionality
 
@@ -12,9 +10,7 @@
 - When in the air after going off a jump, the skier can use the `W` & `S` keys or the up & down arrows to flip.
     - 10 points per flip.
 - The game is over when the skier hits an obstacle or does not land on their skis.
-- The score of each game equates to the in-game currency received.
-
-**COMMENTS**: Is the currency equal to the sum of each game's score? Can you have negative currency?
+- The score of each game equates to the in-game currency received. For each point, the user recieves one piece of in-game currency
 
 - A shop to use currency received in-game to buy new gear - including headwear, jackets, pants, and skis.
     - These are cosmetic only.
@@ -29,9 +25,7 @@
 
 ### Gameplay
 - There are occasional rocks and trees on the slope that end the game when hit - use left/right keys to dodge the obstacles.
-    - Skier crash animation is shown when obstacles are hit.
-
-**COMMENT**: What type of animation?
+    - Skier crash animation is shown when obstacles are hit. The skier loses his skies and falls to a seated position.
 
 - There are also occasional jumps – when the skier goes over the jump they can do tricks, giving extra points.
     - When a jump or jumps are landed, there is a popup on the screen that shows how many points are rewarded.
@@ -39,9 +33,7 @@
 ### Progression
 - The skier slowly moves faster as the game progresses.
 - At a certain speed where the game becomes very difficult, the skier reaches a speed cap.
-
-**COMMENT**: How many rows are there to maneuver between?
-
+- There can be a max of three features across the screen- obstacle or jump. The skier uses ad or the left/right keys to change position.
 - Obstacles appear at a constant rate throughout the game.
 - The air time of a jump increases as the skier reaches higher speeds.
 
@@ -58,8 +50,6 @@
 
 ### Heads up display
 - Displays the score in-game.
-
-**COMMENT**: I like the idea of the game. But, I do think the gameplay could get repetitive and therefore maybe add different levels or modes that can make a variety of user experiences.
 
 # Aesthetics
 
@@ -78,15 +68,12 @@
 ### Color scheme
 - Palette - Mostly blue/greenish-tinted shades of white as shown above, especially in the image of the background.
 - The skier can wear gear that is blue, red, or black to pop out against the white background.
-
-**COMMENT**: Does the background change as the user advances? Maybe the weather or daylight changes?
+- As the skier progresses, weather changes from sunny to cloudy to stormy and repeats.
 
 ### Typography
 - Soft font to maintain the relaxed nature of the game.
 - One such font is the “wintry” font - can be found with a Google search.
 - The text should be readable against the white background - probably in a darker shade of blue or green to keep up with the palette.
-
-**COMMENT**: I like how the typography matches the theme and nature of the game.
 
 ## Layout
 
@@ -94,6 +81,7 @@
 - Shop button in the top left corner.
 - The shop contains 4 rows of items, with each row being one type of gear (headwear, jacket, pants, skis).
 - The high score in the top right corner.
+- This score is preserved whenever the user re-enters the website
 - Skier positioned in the middle with the same background as in-game - to seamlessly transition to the game.
 - An icon in the center directs users to press space to play.
 
@@ -101,5 +89,3 @@
 - Pause/start button in the top left corner.
 - Score in the top right corner.
 - When flips are completed - upon landing there is an on-screen pop-up that announces the score received from those flips.
-
-**COMMENT**: Is progress stored after exiting the website?
