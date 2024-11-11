@@ -8,6 +8,7 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 - Easy GUI
 - Fully documented manuals for using it
 - Allows add ons for custom features
+
 **Cons**
 - Learning curve with implementing new software
 - While it can use some 3d features, it does not allow for full 3d games
@@ -22,20 +23,59 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 `isInShop: boolean` - Tracks whether or not user is in shop. Set to false when game boots
 `shopItems: Item[][]` - double array of all shop items
 `money: int` - counts user currency
+`highscore: int` - local highscore
+`equippedHat: Item` - user's current hat cosmetic
+`equippedShirt: Item` - user's current shirt cosmetic
+`equippedPants: Item` - user's current pant cosmetic
+`equippedSkis: Item` - user's current skis cosmetic
 
 ### Methods
 
 `startGame` - changes isInGame to true
 `openShop` - changes isInShop to true
-`getMoney` - gets money
-`addMoney(int money)` - adds money to money
-`subtractMoney(int money)` subtracts money from money
+
+`equipItem (Item item)` - equips item if it has been purchased
 
 ## 2 LevelManager
 
+### Variables
+
+`score: int` - game score
+`speed: int` - game speed
+`obstacles: Obstacle[]` - holds an array of obstacles
+`player: Player` - current player
+
+### Methods
+
+`startGame` - starts the game
+`gameOver` - ends the game
+`gameUpdate` - updates the game
+`flip` - adds 10 points to the score when a player's pitch does a complete 360
+`jump` - increases Y velocity when player hits a ramp
+
 ## 3 Player
 
-## 4 Item
+### Variables
+
+`Xposition: int` - current X position
+`Yposition: int` - current Y position
+`Xvelocity: int` - current X velocity
+`Yvelocity: int` - current Y velocity
+`pitch: int` - rotation of the player
+
+### Methods
+
+`crash` - plays a death animation when the player loses
+
+## 4 Obstacle
+
+### Variables
+
+`Xposition: int` - current X position
+`Yposition: int` - current Y position
+`isRamp: boolean` - is the obstacle a ramp instead of a tree
+
+## 5 Item
 
 ## Variables
 
@@ -47,7 +87,7 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 
 ## Methods
 
-`purchase` - checks to see if user has money avalible to purchase item, and if they do it marks it as purchased and calls GameManager.subtractMoney(price)
+`purchase` - checks to see if user has money avalible to purchase item, and if they do it marks it as purch
 
 # Data Model - Figma
 
