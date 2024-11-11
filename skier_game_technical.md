@@ -91,3 +91,4 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 
 # Data Model - Figma
 
+![https://www.figma.com/board/L0nXQ4z3IX9u74hGSFa0Jw/SkiGame?node-id=0-1&t=clHQslNUtwlaMGRS-1](https://www.figma.com/board/L0nXQ4z3IX9u74hGSFa0Jw/SkiGame?node-id=0-1&t=clHQslNUtwlaMGRS-1)
