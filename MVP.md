@@ -103,3 +103,17 @@
 
 **Dependencies:**
 - Depends on LevelManager to update obstacle position and track interactions with the player
+
+# MVP Implementation Plan
+
+## Day 1 (Core Framework)
+- Create Tech Stack and GameManager class
+
+## Day 2 (Game Architecture)
+- Create LevelManager class
+
+## Day 3-4 (Player)
+- Create Player class
+
+## Day 5 (Extra Features)
+- Add Obstacle class if time permits, or test existing features
