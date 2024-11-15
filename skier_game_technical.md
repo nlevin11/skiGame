@@ -15,34 +15,36 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 
 # Architecture
 
-## 1 GameManager
+## 1 GameManager - P0
+
+`Note:` - Shop would be a cool new feature after release, not necessary for initial release
 
 ### Variables
 
 `isInGame: boolean` - Tracks whether or not user is in a game. Set to false when game boots
-`isInShop: boolean` - Tracks whether or not user is in shop. Set to false when game boots
-`shopItems: Item[][]` - double array of all shop items
-`money: int` - counts user currency
+`isInShop: boolean` - Tracks whether or not user is in shop. Set to false when game boots - P2
+`shopItems: Item[][]` - double array of all shop items - P2
+`money: int` - counts user currency - P2
 `highscore: int` - local highscore
-`equippedHat: Item` - user's current hat cosmetic
-`equippedShirt: Item` - user's current shirt cosmetic
-`equippedPants: Item` - user's current pant cosmetic
-`equippedSkis: Item` - user's current skis cosmetic
+`equippedHat: Item` - user's current hat cosmetic - P2
+`equippedShirt: Item` - user's current shirt cosmetic - P2
+`equippedPants: Item` - user's current pant cosmetic - P2
+`equippedSkis: Item` - user's current skis cosmetic - P2
 
 ### Methods
 
 `startGame` - changes isInGame to true
-`openShop` - changes isInShop to true
+`openShop` - changes isInShop to true - P2
 
-`equipItem (Item item)` - equips item if it has been purchased
+`equipItem (Item item)` - equips item if it has been purchased - P2
 
-## 2 LevelManager
+## 2 LevelManager - P0
 
 ### Variables
 
 `score: int` - game score
 `speed: int` - game speed
-`obstacles: Obstacle[]` - holds an array of obstacles
+`obstacles: Obstacle[]` - holds an array of obstacles 
 `player: Player` - current player
 
 ### Methods
@@ -50,10 +52,10 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 `startGame` - starts the game
 `gameOver` - ends the game
 `gameUpdate` - updates the game
-`flip` - adds 10 points to the score when a player's pitch does a complete 360
-`jump` - increases Y velocity when player hits a ramp
+`flip` - adds 10 points to the score when a player's pitch does a complete 360 - P1
+`jump` - increases Y velocity when player hits a ramp - P1
 
-## 3 Player
+## 3 Player - P0
 
 ### Variables
 
@@ -75,7 +77,7 @@ This game will implement ![Construct](https://www.construct.net/en/make-games/ma
 `Yposition: int` - current Y position
 `isRamp: boolean` - is the obstacle a ramp instead of a tree
 
-## 5 Item
+## 5 Item - P2
 
 ## Variables
 
