@@ -1,0 +1,21 @@
+{
+	"name": "GameEvents",
+	"events": [
+		{
+			"eventType": "block",
+			"conditions": [
+				{
+					"id": "every-x-seconds",
+					"objectClass": "System",
+					"sid": 531602848226749,
+					"parameters": {
+						"interval-seconds": "1.0"
+					}
+				}
+			],
+			"actions": [],
+			"sid": 507132656209606
+		}
+	],
+	"sid": 885986587286143
+}
