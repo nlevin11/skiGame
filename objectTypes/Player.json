@@ -9,6 +9,11 @@
 			"behaviorId": "custom",
 			"name": "Custom",
 			"sid": 155639859761618
+		},
+		{
+			"behaviorId": "Bullet",
+			"name": "Bullet",
+			"sid": 461644388772495
 		}
 	],
 	"effectTypes": [],
