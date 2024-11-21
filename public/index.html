@@ -18,7 +18,13 @@
   </style>
 </head>
 <body>
-  <div id="game-over">Game Over</div>
+  <div id="game-over" style="display: none;">
+    <h1>Game Over</h1>
+    <button id="restart-button">Replay</button>
+  </div>
+  <div id="score-display" style="position: absolute; top: 10px; left: 10px; font-size: 24px;">
+    Score: 0
+  </div>
   <!-- Include Three.js and Loaders -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="main.js"></script>
