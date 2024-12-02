@@ -7,7 +7,7 @@ let moveRight = false;
 const playerSpeed = 0.3;
 const forwardSpeed = 0.2;
 let frameCount = 0;
-const obstacleFrequency = 30;
+const obstacleFrequency = 20;
 const obstacleSpeed = forwardSpeed;
 let ground;
 const movementLimit = 20;
