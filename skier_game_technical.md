@@ -1,95 +1,169 @@
 # Technology Stack
 
-## Construct
-This game will implement ![Construct](https://www.construct.net/en/make-games/manuals/construct-3), as it naitively implements the 3d depth elements mention in the game design while also having simple creation for the 2d motions of the skier. 
+## JavaScript and Three.js
 
-**Pros**
-- Simplifies development of 2d games
-- Easy GUI
-- Fully documented manuals for using it
-- Allows add ons for custom features
+This game is developed using **JavaScript** and the **Three.js** library, which provides a powerful framework for creating 3D graphics in the browser.
 
-**Cons**
-- Learning curve with implementing new software
-- While it can use some 3d features, it does not allow for full 3d games
+### Pros
+
+- Enables development of 3D games directly in the browser.
+- Extensive documentation and a large community for support.
+- Integration with standard web technologies (HTML, CSS, JavaScript).
+- Cross-platform compatibility without the need for additional plugins.
+
+### Cons
+
+- Requires understanding of 3D graphics concepts.
+- Performance can vary across different browsers and devices.
+- Debugging and performance optimization can be more complex compared to 2D games.
+
+---
 
 # Architecture
 
-## 1 GameManager - P0
-
-`Note:` - Shop would be a cool new feature after release, not necessary for initial release
+## 1. GameManager - P0
 
 ### Variables
 
-`isInGame: boolean` - Tracks whether or not user is in a game. Set to false when game boots
-`isInShop: boolean` - Tracks whether or not user is in shop. Set to false when game boots - P2
-`shopItems: Item[][]` - double array of all shop items - P2
-`money: int` - counts user currency - P2
-`highscore: int` - local highscore
-`equippedHat: Item` - user's current hat cosmetic - P2
-`equippedShirt: Item` - user's current shirt cosmetic - P2
-`equippedPants: Item` - user's current pant cosmetic - P2
-`equippedSkis: Item` - user's current skis cosmetic - P2
+- `scene: THREE.Scene`  
+  The main scene where all objects are added.
+
+- `camera: THREE.PerspectiveCamera`  
+  The camera through which the player views the scene.
+
+- `renderer: THREE.WebGLRenderer`  
+  Responsible for rendering the scene to the screen.
+
+- `player: Player`  
+  The player object.
+
+- `obstacles: Obstacle[]`  
+  An array holding all the obstacles in the game.
+
+- `ground: THREE.Mesh`  
+  The ground plane mesh.
+
+- `isGameOver: boolean`  
+  Tracks whether the game is over.
+
+- `frameCount: number`  
+  Used to control the frequency of obstacle spawning.
+
+- `obstacleFrequency: number`  
+  Determines how often obstacles spawn.
+
+- `obstacleSpeed: number`  
+  The speed at which obstacles move towards the player.
+
+- `spawnDistance: number`  
+  The distance ahead of the player where obstacles are spawned.
+
+- `movementLimit: number`  
+  The limit of the player’s movement along the x-axis.
+
+- `groundWidth: number`  
+  The width of the ground plane.
+
+- `groundLength: number`  
+  The length of the ground plane.
+
+- `score: number`  
+  The current game score.
+
+- `scoreRate: number`  
+  The rate at which the score increases.
+
+- `lastScoreUpdateTime: number`  
+  Timestamp of the last score update.
 
 ### Methods
 
-`startGame` - changes isInGame to true
-`openShop` - changes isInShop to true - P2
+- `init()`  
+  Initializes the game by setting up the scene, camera, renderer, player, ground, and event listeners.
 
-`equipItem (Item item)` - equips item if it has been purchased - P2
+- `onWindowResize()`  
+  Adjusts the camera and renderer when the window is resized.
 
-## 2 LevelManager - P0
+- `animate()`  
+  The main game loop that updates the game state and renders the scene.
+
+- `gameOver()`  
+  Handles the game over state by displaying the game over screen and stopping the game loop.
+
+- `resetGame()`  
+  Resets the game state to allow the player to play again.
+
+- `createObstacle(offset: number = 0)`  
+  Creates a new obstacle and adds it to the scene.
+
+- `preSpawnObstacles()`  
+  Pre-populates obstacles ahead of the player at game start.
+
+- `updateScoreDisplay()`  
+  Updates the score display on the screen.
+
+---
+
+## 2. Player - P0
 
 ### Variables
 
-`score: int` - game score
-`speed: int` - game speed
-`obstacles: Obstacle[]` - holds an array of obstacles 
-`player: Player` - current player
+- `mesh: THREE.Mesh`  
+  The 3D mesh representing the player in the scene.
+
+- `playerSpeed: number`  
+  The speed at which the player moves left and right.
+
+- `moveLeft: boolean`  
+  Indicates if the player is moving left.
+
+- `moveRight: boolean`  
+  Indicates if the player is moving right.
+
+- `movementLimit: number`  
+  The limit of the player’s movement along the x-axis.
+
+- `forwardSpeed: number`  
+  The speed at which the player moves forward along the z-axis.
 
 ### Methods
 
-`startGame` - starts the game
-`gameOver` - ends the game
-`gameUpdate` - updates the game
-`flip` - adds 10 points to the score when a player's pitch does a complete 360 - P1
-`jump` - increases Y velocity when player hits a ramp - P1
+- `updatePosition()`  
+  Updates the player’s position based on input and movement limits.
 
-## 3 Player - P0
+- `resetPosition()`  
+  Resets the player’s position to the starting point.
+
+- `handleKeyDown(event: KeyboardEvent)`  
+  Handles key down events to update movement flags.
+
+- `handleKeyUp(event: KeyboardEvent)`  
+  Handles key up events to update movement flags.
+
+---
+
+## 3. Obstacle - P0
 
 ### Variables
 
-`Xposition: int` - current X position
-`Yposition: int` - current Y position
-`Xvelocity: int` - current X velocity
-`Yvelocity: int` - current Y velocity
-`pitch: int` - rotation of the player
+- `mesh: THREE.Mesh`  
+  The 3D mesh representing the obstacle in the scene.
 
 ### Methods
 
-`crash` - plays a death animation when the player loses
+- `constructor(scene: THREE.Scene, movementLimit: number, playerPositionZ: number, spawnDistance: number, offset: number = 0)`  
+  Initializes a new obstacle, sets its position, and adds it to the scene.
 
-## 4 Obstacle
+- `updatePosition(obstacleSpeed: number)`  
+  Updates the obstacle’s position based on the obstacle speed.
 
-### Variables
+- `removeFromScene(scene: THREE.Scene)`  
+  Removes the obstacle from the scene when it is no longer needed.
 
-`Xposition: int` - current X position
-`Yposition: int` - current Y position
-`isRamp: boolean` - is the obstacle a ramp instead of a tree
+  ## 4. Main - P0
 
-## 5 Item - P2
-
-## Variables
-
-`name: String` - name of the item
-`price: int` - price of the item
-`color: String` - color of item
-`type: String` - type of item it is
-`purchased: boolean` - whether or not the user owns it
-
-## Methods
-
-`purchase` - checks to see if user has money avalible to purchase item, and if they do it marks it as purch
+  - Intializes the GameManager
+  - Used to connect the seperate classes seamlessly to index.html
 
 # Data Model - Figma
 

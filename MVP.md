@@ -1,119 +1,39 @@
-### Technology Stack
+## Completed Items
 
-**Priority:** [P0/P1]
-**Implementation Timeline:** [Day 1]
+### Score tracking and display
+- implemented a score variable that increases at an increasing rate over time
+- displayed on the screen
+- inside GameManager
 
-**Core Requirements:**
-- Implement game engine with 2D and limited 3D support
-- Use an accessible GUI with documented manuals (https://www.construct.net/en/make-games/manuals/construct-3)
+### Initialization of the player and its movement
+- the player is created (only a 3D cube right now) and can be controlled using the arrow keys
+- inside GameManager and Player
 
-**Technical Components:**
-- Game engine: Construct, chosen for simplicity in 2D game development with some 3D capabilities
-- Supports add-ons for custom features
+### Background and playing surface
+- there is a background and a surface for the obstacles and player to sit on
+- inside GameManager
 
-**Simplifications:**
-- Limited 3D elements (only 3D depth) due to engine constraints
-- Certain advanced 3D features not feasible in MVP
+### Obstacle spawning and death mechanics
+- The obstacles spawn randomly on the plane
+- When the player hits an obstacle, they die
+- Upon death, the user can restart the game
+- inside GameManager and Obstacle
 
-**Dependencies:**
-- None
+## To Do List
 
-### Architecture
+### 1. Jumps and flip mechanics P1
+- Implement a new type of obstacle: jumps
+- When the player travels over jumps, they fly in the air for a short time
+- In that time, they can perform flips that boost the player's score
+- The jumps should be inside Obstacle, the player's airtime and tricks should be inside Player, and it should all connect back to the animate method in GameManager
 
-#### GameManager
+### 2. Aesthetics in game P2
+- Use the existing 3D models (or new ones) to design the jumps, rocks, trees, and the player
+- Add a snowy background
+- Give the impression of skiing down a slope in game (through wind, a slanted surface, etc.)
+- Models should be inside Obstacle and Player with everything else inside GameManager
 
-**Priority:** [P0]
-**Implementation Timeline:** [Day 1]
-
-**Core Requirements:**
-- Track game state (e.g., in-game status, high score)
-
-**Technical Components:**
-- `isInGame`: Boolean, tracks game status
-- `highscore`: Integer, stores local high score
-- `startGame`: Method, changes isInGame to true
-
-**Simplifications:**
-- Shop feature postponed for post-release update
-
-**Dependencies:**
-- None
-
-#### LevelManager
-
-**Priority:** [P0/P1] - Obstacles are P1
-**Implementation Timeline:** [Day 2]
-
-**Core Requirements:**
-- Manage game score, speed, obstacles, and player
-
-**Technical Components:**
-- `score`: Integer, tracks game score
-- `speed`: Integer, sets game speed
-- `obstacles`: Array of Obstacle objects - P1
-- `player`: Player object representing the current player
-- `startGame`: Method, starts the game
-- `gameOver`: Method, ends the game
-- `gameUpdate`: Method, updates the game
-
-**Simplifications:**
-- None
-
-**Dependencies:**
-- Depends on GameManager to initialize game state
-
-#### Player
-
-**Priority:** [P0/P1] - Flip and jump methods are P1, rest is P0
-**Implementation Timeline:** [Day 3-4]
-
-**Core Requirements:**
-- Manage player position, velocity, and animations
-
-**Technical Components:**
-- `Xposition`: Integer, current X position
-- `Yposition`: Integer, current Y position
-- `Xvelocity`: Integer, current X velocity
-- `Yvelocity`: Integer, current Y velocity
-- `pitch`: Integer, rotation of the player
-- `flip` - adds 10 points to the score when a player's pitch does a complete 360 - P1
-- `jump` - increases Y velocity when player hits a ramp - P1
-
-**Simplifications:**
-- Flip and jump methods could be postponed if necessary
-
-**Dependencies:**
-- Depends on LevelManager to update player position and velocity, and to check interactions with obstacles
-
-#### Obstacle
-
-**Priority:** [P1]
-**Implementation Timeline:** [Day 5]
-
-**Core Requirements:**
-- Define obstacles and their positions and types
-
-**Technical Components:**
-- `Xposition`: Integer, X position of obstacle
-- `Yposition`: Integer, Y position of obstacle
-- `isRamp`: Boolean, indicates if the obstacle is a ramp or tree
-
-**Simplifications:**
-- None
-
-**Dependencies:**
-- Depends on LevelManager to update obstacle position and track interactions with the player
-
-# MVP Implementation Plan
-
-## Day 1 (Core Framework)
-- Create Tech Stack and GameManager class
-
-## Day 2 (Game Architecture)
-- Create LevelManager class
-
-## Day 3-4 (Player)
-- Create Player class
-
-## Day 5 (Extra Features)
-- Add Obstacle class if time permits, or test existing features
+### 3. Menu screen, shop, and leaderboard P2
+- Implement a starting menu screen which displays high scores for that user
+- Potentially integrate a shop where in-game score can be used to purchase cosmetics
+    - Would require more 3D models
