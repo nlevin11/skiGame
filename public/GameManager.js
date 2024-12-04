@@ -1,10 +1,7 @@
-// GameManager.js
-
 import { Player } from './Player.js';
 import { Obstacle } from './Obstacle.js';
 
 class GameManager {
-  //creates all the variables in the game
   constructor() {
     // Scene, camera, renderer
     this.scene = null;
@@ -19,23 +16,25 @@ class GameManager {
     // Game variables
     this.isGameOver = false;
     this.frameCount = 0;
-    this.obstacleFrequency = 20;
-    this.obstacleSpeed = 0.2;
     this.spawnDistance = 200;
     this.movementLimit = 20;
     this.groundWidth = this.movementLimit * 2;
     this.groundLength = 1000;
 
-    // Score variables
+    // Speed and score variables
     this.score = 0;
-    this.scoreRate = 1;
-    this.lastScoreUpdateTime = Date.now();
+    this.gameStartTime = Date.now(); // When the game starts
+    this.lastScoreUpdateTime = Date.now(); // Last time score was updated
+    this.speedIncreaseDuration = 60000; // 60 seconds in milliseconds
+    this.initialPlayerSpeed = 0.2; // Initial forward speed
+    this.maxSpeedMultiplier = 4; // Max multiplier for speed
+    this.obstacleSpeed = 0.2; // Base obstacle speed
+    this.baseObstacleFrequency = 20; // Base frame interval for spawning obstacles
 
     // Initialize the game
     this.init();
   }
-  // initializes the game, including the backround, camera, player,
-  // obstacles, event listeners, lighting, ground, and score.
+
   init() {
     // Create the scene
     this.scene = new THREE.Scene();
@@ -77,6 +76,7 @@ class GameManager {
 
     // Create the player
     this.player = new Player(this.scene);
+    this.player.forwardSpeed = this.initialPlayerSpeed; // Set initial speed
 
     // Pre-spawn obstacles
     this.preSpawnObstacles();
@@ -102,7 +102,7 @@ class GameManager {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
-  // ends the game and displays the game over screen (including restart button)
+
   gameOver() {
     this.isGameOver = true;
     const gameOverScreen = document.getElementById('game-over');
@@ -112,12 +112,12 @@ class GameManager {
     document.removeEventListener('keydown', (event) => this.player.handleKeyDown(event));
     document.removeEventListener('keyup', (event) => this.player.handleKeyUp(event));
   }
-  // resets the game, including the game over screen, obstacles, player position, score, and score rate.
+
   resetGame() {
     this.isGameOver = false;
     this.frameCount = 0;
     this.score = 0;
-    this.scoreRate = 1;
+    this.gameStartTime = Date.now();
     this.lastScoreUpdateTime = Date.now();
 
     // Remove all obstacles from the scene
@@ -126,8 +126,9 @@ class GameManager {
     });
     this.obstacles.length = 0;
 
-    // Reset player position
+    // Reset player position and speed
     this.player.resetPosition();
+    this.player.forwardSpeed = this.initialPlayerSpeed;
 
     const gameOverScreen = document.getElementById('game-over');
     if (gameOverScreen) {
@@ -147,66 +148,98 @@ class GameManager {
     this.preSpawnObstacles();
   }
 
-  // animates the game, including updating the player position, creating obstacles, moving obstacles, 
-  // collision detection, camera position, ground position, score, and rendering the scene.
+  checkCollision(playerMesh, obstacleMesh, obstaclePrevPosition, obstacleNewPosition) {
+    const playerBox = new THREE.Box3().setFromObject(playerMesh);
+    const obstacleBox = new THREE.Box3().setFromObject(obstacleMesh);
+  
+    // Low-speed collision detection (bounding box)
+    if (playerBox.intersectsBox(obstacleBox)) {
+      return true;
+    }
+  
+    // High-speed collision detection (raycasting)
+    const obstaclePath = new THREE.Ray(
+      obstaclePrevPosition,
+      new THREE.Vector3().subVectors(obstacleNewPosition, obstaclePrevPosition).normalize()
+    );
+  
+    const distanceTraveled = obstaclePrevPosition.distanceTo(obstacleNewPosition);
+    const intersection = obstaclePath.intersectBox(playerBox);
+  
+    if (intersection && intersection.distance <= distanceTraveled) {
+      return true;
+    }
+  
+    return false;
+  }
+  
+
   animate() {
     if (this.isGameOver) return;
     requestAnimationFrame(() => this.animate());
-
+  
+    const elapsedTime = Date.now() - this.gameStartTime;
+    const speedMultiplier = 1 + (Math.min(elapsedTime / this.speedIncreaseDuration, 1) * (this.maxSpeedMultiplier - 1));
+  
+    // Update player and obstacle speeds
+    this.player.forwardSpeed = this.initialPlayerSpeed * speedMultiplier;
+    this.obstacleSpeed = 0.2 * speedMultiplier;
+  
     this.player.updatePosition();
-
-    // Create obstacles at intervals
+  
+    // Spawn obstacles dynamically
     this.frameCount++;
-    if (this.frameCount % this.obstacleFrequency === 0) {
+    const obstacleFrequency = Math.max(Math.floor(this.baseObstacleFrequency / speedMultiplier), 1);
+    if (this.frameCount % obstacleFrequency === 0) {
       this.createObstacle();
     }
-
-    // Move obstacles towards the player
+  
+    // Handle obstacle movements and collision detection
     this.obstacles.forEach((obstacle, index) => {
+      const previousPosition = obstacle.mesh.position.clone();
       obstacle.updatePosition(this.obstacleSpeed);
-
-      // Collision detection
-      const playerBox = new THREE.Box3().setFromObject(this.player.mesh);
-      const obstacleBox = new THREE.Box3().setFromObject(obstacle.mesh);
-
-      if (playerBox.intersectsBox(obstacleBox)) {
+      const currentPosition = obstacle.mesh.position.clone();
+  
+      // Check for collision
+      const isCollision = this.checkCollision(
+        this.player.mesh,
+        obstacle.mesh,
+        previousPosition,
+        currentPosition
+      );
+  
+      if (isCollision) {
         this.gameOver();
       }
-
-      // Remove obstacles that have passed the player
+  
+      // Remove obstacles that are out of view
       if (obstacle.mesh.position.z > this.player.mesh.position.z + 50) {
         obstacle.removeFromScene(this.scene);
         this.obstacles.splice(index, 1);
       }
     });
-
-    // Update the camera to follow the player
+  
+    // Update the camera and ground position
     this.camera.position.z = this.player.mesh.position.z + 15;
     this.camera.lookAt(
       this.player.mesh.position.x,
       this.player.mesh.position.y + 2,
       this.player.mesh.position.z
     );
-
-    // Update ground position to follow the player
     this.ground.position.z = this.player.mesh.position.z - this.groundLength / 2;
-
+  
     // Update the score
     const currentTime = Date.now();
     const deltaTime = (currentTime - this.lastScoreUpdateTime) / 1000;
-    if (deltaTime >= 1) {
-      this.score += this.scoreRate;
+    if (deltaTime >= (1 / speedMultiplier)) {
+      this.score += 1;
       this.lastScoreUpdateTime = currentTime;
-
-      if (this.scoreRate < 10) {
-        this.scoreRate += 1;
-      }
-
       this.updateScoreDisplay();
     }
-
+  
     this.renderer.render(this.scene, this.camera);
   }
+  
 
   createObstacle(offset = 0) {
     const obstacle = new Obstacle(
@@ -221,17 +254,17 @@ class GameManager {
 
   preSpawnObstacles() {
     const numObstacles = Math.ceil(
-      this.spawnDistance / (this.obstacleFrequency * this.obstacleSpeed)
+      this.spawnDistance / (this.baseObstacleFrequency * this.obstacleSpeed)
     );
     for (let i = 0; i < numObstacles; i++) {
-      this.createObstacle(i * this.obstacleFrequency * this.obstacleSpeed);
+      this.createObstacle(i * this.baseObstacleFrequency * this.obstacleSpeed);
     }
   }
 
   updateScoreDisplay() {
     const scoreDisplay = document.getElementById('score-display');
     if (scoreDisplay) {
-      scoreDisplay.textContent = `Score: ${this.score}`;
+      scoreDisplay.textContent = `Score: ${Math.floor(this.score)}`;
     }
   }
 }
