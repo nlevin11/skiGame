@@ -115,11 +115,9 @@ rightCliff.castShadow = false;
 rightCliff.receiveShadow = false;
 this.scene.add(rightCliff);
 
-
-
-
-
-
+// Create bounding boxes for cliffs
+const leftCliffBox = new THREE.Box3().setFromObject(leftCliff);
+const rightCliffBox = new THREE.Box3().setFromObject(rightCliff);
 
 
     // Create extended ground plane
@@ -271,6 +269,15 @@ this.scene.add(rightCliff);
         this.gameOver();
       }
 
+      // Collision detection for cliffs based on X-axis position and the player's bounds
+if (
+  (this.player.mesh.position.x <= -this.movementLimit) ||
+  (this.player.mesh.position.x >= this.movementLimit)
+) {
+  this.gameOver(); // Player collides with a cliff
+}
+
+
       // Remove obstacles that are out of view
       if (obstacle.mesh.position.z > this.player.mesh.position.z + 50) {
         obstacle.removeFromScene(this.scene);
@@ -304,6 +311,7 @@ this.scene.add(rightCliff);
       this.updateScoreDisplay();
     }
 
+    // Render the scene
     this.renderer.render(this.scene, this.camera);
   }
 
