@@ -42,6 +42,7 @@
 - I think that the leaderboard should be a higher priority. would be a lot more engaging/addictive if you were constantly trying to beat your own record
 - Would be cool if obstacles randomly varied in size a little
 - would be cool if the rate at which the speed increased decreased over time. like maybe it goes from 1x speed to 3x speed in the first minute, and then up to 6x speed in the next 2 minutes, and then up to 10x speed in the next 3 minutes. those are made up numbers but you get what im saying
+- would be nice if there was like a 1-second buffer zone with no obstacles so you dont just die in the first instant of the game
 
 ### 2. Aesthetics in game P2
 - Use the existing 3D models (or new ones) to design the jumps, rocks, trees, and the player <!-- tbh i kinda like the aesthetic as it is. i agree that the snow could look better, and yeah, there should be a basic design for the player, but i like the blockiness of it all-->
