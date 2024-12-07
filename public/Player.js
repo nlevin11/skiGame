@@ -40,6 +40,7 @@ class Player {
     resetPosition() {
       this.mesh.position.set(0, -1, 0);
     }
+
   
     // handles the keydown event, triggering movement
     handleKeyDown(event) {
