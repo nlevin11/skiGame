@@ -1,6 +1,7 @@
 import { Player } from './Player.js';
 import { Obstacle } from './Obstacle.js';
 import { Cliffs } from './Cliffs.js';
+import { ModelsLoader } from './ModelsLoader.js';
 
 class GameManager {
   constructor() {
@@ -13,7 +14,8 @@ class GameManager {
     this.player = null;
     this.obstacles = [];
     this.ground = null;
-    this.cliffs = null; // Cliffs instance
+    this.cliffs = null;
+    this.modelsLoader = new ModelsLoader();
 
     // Game variables
     this.isGameOver = false;
@@ -25,32 +27,32 @@ class GameManager {
 
     // Speed and score variables
     this.score = 0;
-    this.gameStartTime = Date.now(); // When the game starts
-    this.lastScoreUpdateTime = Date.now(); // Last time score was updated
-    this.speedIncreaseDuration = 120000; // 120 seconds in milliseconds
-    this.initialPlayerSpeed = 0.2; // Initial forward speed
-    this.maxSpeedMultiplier = 6; // Max multiplier for speed
-    this.obstacleSpeed = 0.2; // Base obstacle speed
-    this.baseObstacleFrequency = 20; // Base frame interval for spawning obstacles
+    this.gameStartTime = Date.now();
+    this.lastScoreUpdateTime = Date.now();
+    this.speedIncreaseDuration = 100000;
+    this.initialPlayerSpeed = 0.2;
+    this.maxSpeedMultiplier = 6;
+    this.obstacleSpeed = 0.2;
+    this.baseObstacleFrequency = 20;
 
     // Initialize the game
     this.init();
   }
 
-  init() {
+  async init() {
     // Create the scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xb0e0e6);
 
     // Set up the camera
     this.camera = new THREE.PerspectiveCamera(
-      90,
+      75,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    this.camera.position.set(0, 3, 15);
-    this.camera.lookAt(0, -2, 0);
+    this.camera.position.set(0, 3.5, 9);
+    this.camera.lookAt(0, -1, 0);
 
     // Set up the renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -58,6 +60,22 @@ class GameManager {
     this.renderer.shadowMap.enabled = true;
     document.body.appendChild(this.renderer.domElement);
 
+    // Load 3D models
+    try {
+      await Promise.all([
+        this.modelsLoader.loadModel('assets/models/tree.glb', 'tree'),
+        this.modelsLoader.loadModel('assets/models/rock.glb', 'rock')
+      ]);
+      console.log('Models loaded successfully');
+    } catch (error) {
+      console.warn('Failed to load models, using fallback geometries:', error);
+    }
+
+    // Continue with scene setup
+    this.setupScene();
+  }
+
+  setupScene() {
     // Add lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     this.scene.add(ambientLight);
@@ -71,7 +89,7 @@ class GameManager {
     this.cliffs = new Cliffs(this.scene, this.groundLength, this.movementLimit);
 
     // Create extended ground plane
-    const groundGeometry = new THREE.PlaneGeometry(this.groundWidth, this.groundLength * 2); // Doubled length
+    const groundGeometry = new THREE.PlaneGeometry(this.groundWidth, this.groundLength * 2);
     const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
     this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
     this.ground.rotation.x = -Math.PI / 2;
@@ -81,7 +99,7 @@ class GameManager {
 
     // Create the player
     this.player = new Player(this.scene);
-    this.player.forwardSpeed = this.initialPlayerSpeed; // Set initial speed
+    this.player.forwardSpeed = this.initialPlayerSpeed;
 
     // Pre-spawn obstacles
     this.preSpawnObstacles();
@@ -110,20 +128,41 @@ class GameManager {
 
   gameOver() {
     this.isGameOver = true;
+    
+    // Show game over text
     const gameOverScreen = document.getElementById('game-over');
     if (gameOverScreen) {
       gameOverScreen.style.display = 'block';
     }
+
+    // Show restart button
+    const restartButton = document.getElementById('restart-button');
+    if (restartButton) {
+      restartButton.style.display = 'block';
+    }
+
+    // Remove event listeners
     document.removeEventListener('keydown', (event) => this.player.handleKeyDown(event));
     document.removeEventListener('keyup', (event) => this.player.handleKeyUp(event));
   }
 
-  resetGame() {
+  async resetGame() {
     this.isGameOver = false;
     this.frameCount = 0;
     this.score = 0;
     this.gameStartTime = Date.now();
     this.lastScoreUpdateTime = Date.now();
+
+    // Hide game over elements
+    const gameOverScreen = document.getElementById('game-over');
+    if (gameOverScreen) {
+      gameOverScreen.style.display = 'none';
+    }
+
+    const restartButton = document.getElementById('restart-button');
+    if (restartButton) {
+      restartButton.style.display = 'none';
+    }
 
     // Remove all obstacles from the scene
     this.obstacles.forEach((obstacle) => {
@@ -134,11 +173,6 @@ class GameManager {
     // Reset player position and speed
     this.player.resetPosition();
     this.player.forwardSpeed = this.initialPlayerSpeed;
-
-    const gameOverScreen = document.getElementById('game-over');
-    if (gameOverScreen) {
-      gameOverScreen.style.display = 'none';
-    }
 
     // Restart animation loop
     this.animate();
@@ -153,16 +187,27 @@ class GameManager {
     this.preSpawnObstacles();
   }
 
-  checkCollision(playerMesh, obstacleMesh, obstaclePrevPosition, obstacleNewPosition) {
-    const playerBox = new THREE.Box3().setFromObject(playerMesh);
-    const obstacleBox = new THREE.Box3().setFromObject(obstacleMesh);
+  checkCollision(playerMesh, obstacle, obstaclePrevPosition, obstacleNewPosition) {
+    // First check if it's a jump ramp
+    if (obstacle.userData.type === 'jump') {
+      const playerBox = new THREE.Box3().setFromObject(playerMesh);
+      const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+      
+      if (playerBox.intersectsBox(obstacleBox)) {
+        this.player.initiateJump();
+        return false;
+      }
+    }
 
-    // Low-speed collision detection (bounding box)
+    // For other obstacles, use the hitbox if available
+    const collisionMesh = obstacle.hitboxMesh || obstacle;
+    const playerBox = new THREE.Box3().setFromObject(playerMesh);
+    const obstacleBox = new THREE.Box3().setFromObject(collisionMesh);
+
     if (playerBox.intersectsBox(obstacleBox)) {
       return true;
     }
 
-    // High-speed collision detection (raycasting)
     const obstaclePath = new THREE.Ray(
       obstaclePrevPosition,
       new THREE.Vector3().subVectors(obstacleNewPosition, obstaclePrevPosition).normalize()
@@ -171,13 +216,8 @@ class GameManager {
     const distanceTraveled = obstaclePrevPosition.distanceTo(obstacleNewPosition);
     const intersection = obstaclePath.intersectBox(playerBox);
 
-    if (intersection && intersection.distance <= distanceTraveled) {
-      return true;
-    }
-
-    return false;
+    return intersection && intersection.distance <= distanceTraveled;
   }
-
 
   animate() {
     if (this.isGameOver) return;
@@ -186,25 +226,20 @@ class GameManager {
     const elapsedTime = Date.now() - this.gameStartTime;
     const speedMultiplier = 1 + (Math.min(elapsedTime / this.speedIncreaseDuration, 1) * (this.maxSpeedMultiplier - 1));
 
-    // Update player and obstacle speeds
     this.player.forwardSpeed = this.initialPlayerSpeed * speedMultiplier;
     this.player.updatePosition();
 
-    // Spawn obstacles dynamically
     this.frameCount++;
     const obstacleFrequency = Math.max(Math.floor(this.baseObstacleFrequency / speedMultiplier), 1);
     if (this.frameCount % obstacleFrequency === 0) {
       this.createObstacle();
     }
 
-
-    // Handle obstacle movements and collision detection
     this.obstacles.forEach((obstacle, index) => {
       const previousPosition = obstacle.mesh.position.clone();
       obstacle.updatePosition(this.obstacleSpeed);
       const currentPosition = obstacle.mesh.position.clone();
 
-      // Check for collision
       const isCollision = this.checkCollision(
         this.player.mesh,
         obstacle.mesh,
@@ -216,40 +251,31 @@ class GameManager {
         this.gameOver();
       }
 
-      // Collision detection for cliffs based on X-axis position and the player's bounds
-if (
-  (this.player.mesh.position.x <= -this.movementLimit) ||
-  (this.player.mesh.position.x >= this.movementLimit)
-) {
-  this.gameOver(); // Player collides with a cliff
-}
+      if (
+        (this.player.mesh.position.x <= -this.movementLimit) ||
+        (this.player.mesh.position.x >= this.movementLimit)
+      ) {
+        this.gameOver();
+      }
 
-
-      // Remove obstacles that are out of view
       if (obstacle.mesh.position.z > this.player.mesh.position.z + 50) {
         obstacle.removeFromScene(this.scene);
         this.obstacles.splice(index, 1);
       }
-
-
     });
 
-    // Update the camera to follow the player
-    this.camera.position.x = this.player.mesh.position.x; // Match player's horizontal movement
-    this.camera.position.z = this.player.mesh.position.z + 15; // Keep a fixed distance behind
-    this.camera.position.y = 3; // Maintain a consistent height
+    this.camera.position.x = this.player.mesh.position.x;
+    this.camera.position.z = this.player.mesh.position.z + 15;
+    this.camera.position.y = 3;
 
-    // Ensure the camera looks slightly ahead of the player
     const lookAheadDistance = 5;
     this.camera.lookAt(
       this.player.mesh.position.x,
       this.player.mesh.position.y + 2,
       this.player.mesh.position.z - lookAheadDistance
     );
-    this.ground.position.z = this.player.mesh.position.z; // Center ground under the player
+    this.ground.position.z = this.player.mesh.position.z;
 
-
-    // Update the score
     const currentTime = Date.now();
     const deltaTime = (currentTime - this.lastScoreUpdateTime) / 1000;
     if (deltaTime >= (1 / speedMultiplier)) {
@@ -258,10 +284,8 @@ if (
       this.updateScoreDisplay();
     }
 
-    // Render the scene
     this.renderer.render(this.scene, this.camera);
   }
-
 
   createObstacle(offset = 0) {
     const obstacle = new Obstacle(
@@ -269,6 +293,7 @@ if (
       this.movementLimit,
       this.player.mesh.position.z,
       this.spawnDistance,
+      this.modelsLoader,
       offset
     );
     this.obstacles.push(obstacle);
@@ -291,5 +316,4 @@ if (
   }
 }
 
-// Export the GameManager class
 export { GameManager };

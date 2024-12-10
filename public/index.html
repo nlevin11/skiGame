@@ -1,22 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Ski Game</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Skiing Game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game-over" style="display: none;">
-    <h1>Game Over</h1>
-    <button id="restart-button">Replay</button>
-  </div>
-  <div id="score-display" style="position: absolute; top: 10px; left: 10px; font-size: 24px;">
-    Score: 0
-  </div>
-  <!-- Include Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <div id="game-over">Game Over</div>
+    <div id="score-display">Score: 0</div>
+    <button id="restart-button">Restart</button>
 
-  <!-- Main Script -->
-  <script type="module" src="main.js"></script>
+    <!-- Import Three.js and GLTFLoader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Import your game files -->
+    <script type="module" src="ModelsLoader.js"></script>
+    <script type="module" src="Player.js"></script>
+    <script type="module" src="Obstacle.js"></script>
+    <script type="module" src="Cliffs.js"></script>
+    <script type="module" src="GameManager.js"></script>
+    <script type="module">
+        import { GameManager } from './GameManager.js';
+        window.addEventListener('load', () => {
+            new GameManager();
+        });
+    </script>
 </body>
 </html>
