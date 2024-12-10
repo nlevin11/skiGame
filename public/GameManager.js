@@ -33,7 +33,8 @@ class GameManager {
     this.initialPlayerSpeed = 0.2;
     this.maxSpeedMultiplier = 6;
     this.obstacleSpeed = 0.2;
-    this.baseObstacleFrequency = 20;
+    this.baseObstacleFrequency = 25;
+    this.obstacleSpawnDelay = 2000;
 
     // Initialize the game
     this.init();
@@ -230,8 +231,11 @@ class GameManager {
     this.player.updatePosition();
 
     this.frameCount++;
+
     const obstacleFrequency = Math.max(Math.floor(this.baseObstacleFrequency / speedMultiplier), 1);
-    if (this.frameCount % obstacleFrequency === 0) {
+    
+    // Only spawn obstacles if 2 seconds have passed
+    if (elapsedTime > this.obstacleSpawnDelay && this.frameCount % obstacleFrequency === 0) {
       this.createObstacle();
     }
 
@@ -262,8 +266,6 @@ class GameManager {
         obstacle.removeFromScene(this.scene);
         this.obstacles.splice(index, 1);
       }
-
-
     });
 
     this.camera.position.x = this.player.mesh.position.x;
@@ -280,13 +282,23 @@ class GameManager {
 
     const currentTime = Date.now();
     const deltaTime = (currentTime - this.lastScoreUpdateTime) / 1000;
+
+    // Check if it's time to increment score
     if (deltaTime >= (1 / speedMultiplier)) {
-      this.score += 1;
+      // Determine base score increment
+      let scoreIncrement = 1;
+  
+      // If boosting, increase increment by 50%
+      if (this.player.isBoosting) {
+        scoreIncrement = 1.5; 
+      }
+
+      // Add to score
+      this.score += scoreIncrement;
       this.lastScoreUpdateTime = currentTime;
       this.updateScoreDisplay();
     }
 
-    // Render the scene
     this.renderer.render(this.scene, this.camera);
   }
 

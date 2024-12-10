@@ -8,7 +8,7 @@ class Player {
         this.moveRight = false;
         this.movementLimit = 20;
         this.forwardSpeed = 0.2;
-        
+
         // Jump properties
         this.isJumping = false;
         this.jumpHeight = 0;
@@ -16,7 +16,10 @@ class Player {
         this.gravity = 0.015;
         this.baseY = -.2;
 
-        // Create temporary box while model loads
+        // New property for speed boost
+        this.isBoosting = false;
+        
+        // Create a temporary box while model loads
         const playerGeometry = new THREE.BoxGeometry(1, 2, 0.5);
         const playerMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
         this.mesh = new THREE.Mesh(playerGeometry, playerMaterial);
@@ -24,7 +27,7 @@ class Player {
         this.mesh.position.set(0, this.baseY, 0);
         scene.add(this.mesh);
 
-        // Load the skier model
+        // Load the skier model if available
         this.loadSkierModel(scene);
     }
 
@@ -60,19 +63,19 @@ class Player {
     }
     
     updatePosition() {
-        // Movement
-        this.mesh.position.z -= this.forwardSpeed;
+        // Move forward, with boost factor
+        const boostFactor = this.isBoosting ? 1.5 : 1.0;
+        this.mesh.position.z -= this.forwardSpeed * boostFactor;
         
+        // Horizontal movement and lean
         if (this.moveLeft) {
             this.mesh.position.x -= this.playerSpeed;
-            // Tilt model slightly when turning left
             this.mesh.rotation.z = Math.min(this.mesh.rotation.z + 0.1, 0.3);
         } else if (this.moveRight) {
             this.mesh.position.x += this.playerSpeed;
-            // Tilt model slightly when turning right
             this.mesh.rotation.z = Math.max(this.mesh.rotation.z - 0.1, -0.3);
         } else {
-            // Return to upright position
+            // Return to upright position horizontally
             this.mesh.rotation.z *= 0.9;
         }
         
@@ -80,19 +83,33 @@ class Player {
         if (this.isJumping) {
             this.jumpVelocity -= this.gravity;
             this.mesh.position.y += this.jumpVelocity;
-            
+    
             // Add forward tilt during jump
             this.mesh.rotation.x = -this.jumpVelocity * 2;
-            
+    
             if (this.mesh.position.y <= this.baseY) {
                 this.mesh.position.y = this.baseY;
                 this.mesh.rotation.x = 0;
                 this.isJumping = false;
                 this.jumpVelocity = 0;
             }
+        } else {
+            // If not jumping, tilt forward if boosting
+            if (this.isBoosting) {
+                // Slight forward lean
+                // Adjust angle as desired, e.g., -0.1 radians (~ -5.7 degrees)
+                this.mesh.rotation.x = -0.5;
+            } else {
+                // No boost, return to upright position
+                // Smoothly return rotation.x to 0 if needed, or directly set it
+                this.mesh.rotation.x *= 0.9;
+                if (Math.abs(this.mesh.rotation.x) < 0.01) {
+                    this.mesh.rotation.x = 0;
+                }
+            }
         }
-
-        // Keep within bounds
+    
+        // Clamp horizontal position
         this.mesh.position.x = THREE.MathUtils.clamp(
             this.mesh.position.x,
             -this.movementLimit,
@@ -116,6 +133,10 @@ class Player {
         if (event.code === 'ArrowRight' || event.code === 'KeyD') {
             this.moveRight = true;
         }
+        // If W or Up Arrow is pressed, activate boost
+        if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+            this.isBoosting = true;
+        }
     }
     
     handleKeyUp(event) {
@@ -124,6 +145,10 @@ class Player {
         }
         if (event.code === 'ArrowRight' || event.code === 'KeyD') {
             this.moveRight = false;
+        }
+        // If W or Up Arrow is released, deactivate boost
+        if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+            this.isBoosting = false;
         }
     }
 }

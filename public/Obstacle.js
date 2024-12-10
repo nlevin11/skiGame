@@ -1,16 +1,26 @@
 class Obstacle {
   constructor(scene, movementLimit, playerPositionZ, spawnDistance, modelsLoader, offset = 0) {
     let obstacle;
-    const obstacleType = Math.random() < 0.33 ? 'tree' : 
-                        Math.random() < 0.66 ? 'rock' : 'jump';
+    const obstacleTypeRoll = Math.random();
+    let obstacleType = 'tree';
+    if (obstacleTypeRoll < 0.33) {
+      obstacleType = 'tree';
+    } else if (obstacleTypeRoll < 0.66) {
+      obstacleType = 'rock';
+    } else {
+      obstacleType = 'jump';
+    }
+
+    const xPos = (Math.random() - 0.5) * movementLimit * 2;
+    const zPos = playerPositionZ - spawnDistance + offset;
+    const baseY = (obstacleType === 'jump') ? -2 : -1;
 
     if (obstacleType === 'tree' || obstacleType === 'rock') {
-      // Get the corresponding model
       const model = modelsLoader.getModel(obstacleType);
       if (model) {
         obstacle = model.clone();
-        
-        // Visual scaling remains large
+
+        // Scale models as before
         if (obstacleType === 'tree') {
           const scale = 2.0;
           obstacle.scale.set(scale, scale, scale);
@@ -19,77 +29,78 @@ class Obstacle {
           obstacle.scale.set(scale, scale, scale);
         }
 
-        // Create invisible hitbox mesh
-        const hitboxSize = obstacleType === 'tree' ? 0.6 : 0.8; // Smaller hitbox sizes
-        const hitboxGeometry = new THREE.BoxGeometry(hitboxSize, hitboxSize, hitboxSize);
-        const hitboxMaterial = new THREE.MeshBasicMaterial({
-          visible: false // Make hitbox invisible
-        });
+        // Place the obstacle before computing bounding box
+        obstacle.position.set(xPos, baseY, zPos);
+        scene.add(obstacle);
+
+        // Compute bounding box after obstacle is placed
+        const boundingBox = new THREE.Box3().setFromObject(obstacle);
+        const size = new THREE.Vector3();
+        boundingBox.getSize(size);
+
+        // Create a much smaller hitbox, for example 40% of model size
+        const hitboxScale = 0.4;
+        const hitboxGeometry = new THREE.BoxGeometry(
+          size.x * hitboxScale,
+          size.y * hitboxScale,
+          size.z * hitboxScale
+        );
+        const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
         this.hitboxMesh = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
-        
-        // Position hitbox at the base center of the visual model
-        this.hitboxMesh.position.copy(obstacle.position);
-        if (obstacleType === 'tree') {
-          this.hitboxMesh.position.y = -1.5; // Adjust based on your needs
-        } else {
-          this.hitboxMesh.position.y = -1.2; // Adjust for rocks
-        }
-        
+
+        // Position the hitbox at the center of the model's bounding box
+        const center = new THREE.Vector3();
+        boundingBox.getCenter(center);
+
+        // We'll just put the hitbox center at the bounding box center
+        this.hitboxMesh.position.copy(center);
+
         scene.add(this.hitboxMesh);
       } else {
-        // Fallback geometric shapes with smaller hitboxes
+        // If model is not loaded, fallback to simpler shapes:
         console.warn(`${obstacleType} model not loaded, using fallback geometry`);
+
+        let visualGeometry, visualMaterial, hitboxGeometry, hitboxMaterial;
+
         if (obstacleType === 'tree') {
-          // Visual mesh
-          const visualGeometry = new THREE.ConeGeometry(1.0, 4, 16);
-          const visualMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+          visualGeometry = new THREE.ConeGeometry(1.0, 4, 16);
+          visualMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
           obstacle = new THREE.Mesh(visualGeometry, visualMaterial);
-          
-          // Hitbox mesh
-          const hitboxGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-          const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
+
+          // Smaller fallback hitbox
+          hitboxGeometry = new THREE.BoxGeometry(0.3, 0.8, 0.3); // smaller than before
+          hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
           this.hitboxMesh = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
-          this.hitboxMesh.position.y = -1.5;
+          this.hitboxMesh.position.set(xPos, baseY - 1.5, zPos);
         } else {
-          // Visual mesh
-          const visualGeometry = new THREE.BoxGeometry(2, 2, 2);
-          const visualMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+          visualGeometry = new THREE.BoxGeometry(2, 2, 2);
+          visualMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
           obstacle = new THREE.Mesh(visualGeometry, visualMaterial);
-          
-          // Hitbox mesh
-          const hitboxGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-          const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
+
+          // Smaller fallback hitbox
+          hitboxGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5); // reduced size
+          hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false });
           this.hitboxMesh = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
-          this.hitboxMesh.position.y = -1.2;
+          this.hitboxMesh.position.set(xPos, baseY - 1.2, zPos);
         }
+
+        obstacle.position.set(xPos, baseY, zPos);
+        scene.add(obstacle);
         scene.add(this.hitboxMesh);
       }
-    } else { // jump ramp
+    } else {
+      // Jump ramp logic remains the same
       const rampGeometry = new THREE.BoxGeometry(4, 0.5, 2);
       const rampMaterial = new THREE.MeshLambertMaterial({ color: 0xffd700 });
       obstacle = new THREE.Mesh(rampGeometry, rampMaterial);
       obstacle.rotation.x = Math.PI / 8;
-      obstacle.position.z += 1;
-      this.hitboxMesh = obstacle; // For jump ramps, use the same mesh for hitbox
+      obstacle.position.set(xPos, baseY, zPos + 1);
+      scene.add(obstacle);
+      this.hitboxMesh = obstacle; // Use the same mesh as hitbox for ramp
     }
 
     obstacle.castShadow = true;
     obstacle.userData.type = obstacleType;
-
-    // Position both visual and hitbox
-    const xPos = (Math.random() - 0.5) * movementLimit * 2;
-    const zPos = playerPositionZ - spawnDistance + offset;
-    
-    obstacle.position.x = xPos;
-    obstacle.position.y = obstacleType === 'jump' ? -2 : -1;
-    obstacle.position.z = zPos;
-    
-    if (this.hitboxMesh !== obstacle) {
-      this.hitboxMesh.position.x = xPos;
-      this.hitboxMesh.position.z = zPos;
-    }
-
-    scene.add(obstacle);
     this.mesh = obstacle;
   }
 
@@ -107,7 +118,6 @@ class Obstacle {
     }
   }
 
-  // Method to get the collision mesh for hit detection
   getCollisionMesh() {
     return this.hitboxMesh;
   }
