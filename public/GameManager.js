@@ -262,6 +262,8 @@ class GameManager {
         obstacle.removeFromScene(this.scene);
         this.obstacles.splice(index, 1);
       }
+
+
     });
 
     this.camera.position.x = this.player.mesh.position.x;
@@ -284,8 +286,10 @@ class GameManager {
       this.updateScoreDisplay();
     }
 
+    // Render the scene
     this.renderer.render(this.scene, this.camera);
   }
+
 
   createObstacle(offset = 0) {
     const obstacle = new Obstacle(

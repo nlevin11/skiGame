@@ -107,6 +107,8 @@ class Player {
         this.jumpVelocity = 0;
     }
 
+  
+    // handles the keydown event, triggering movement
     handleKeyDown(event) {
         if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
             this.moveLeft = true;
